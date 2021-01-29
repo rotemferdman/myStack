@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdlib.h>
 
 template <class T>
 class node
@@ -7,8 +8,21 @@ public:
 	T data;
 	node* next;
 };
+
+template <class T>
+class sequence
+{
+
+public:
+	virtual void push(T data) = 0;
+	virtual void clean() = 0;
+	virtual int size() = 0;
+	virtual T operator[](int) = 0;
+};
+
+
 template<class T>
-class stack
+class stack : public sequence<T>
 {
 private:
 	bool isTop = true;
@@ -16,34 +30,53 @@ private:
 	node<T>* top;
 public:
 	stack() : top(new node<T>) {};
-	void push(T data);
+	~stack() { delete this->top; }
+	virtual void push(T data);
 	T pop();
-	void clean();
-	T operator[](int);
-	int size();
+	virtual void clean();
+	virtual T operator[](int);
+	virtual int size();
 };
+
+template<class T>
+class arr : public sequence<T>
+{
+private:
+	bool isClean = true;
+	size_t size_arr = 0;
+	T* p_arr = new T(this->size_arr);
+public:
+	virtual void push(T data);
+	virtual void clean();
+	virtual int size();
+	virtual T operator[](int);
+};
+
+template<class T, class U>
+class pair
+{
+private:
+	bool isClean = true;
+	size_t size_pair = 0;
+	arr<T> arr1;
+	arr<U> arr2;
+public:
+	void push(T key, U val);
+	U pop(T key);
+	size_t size();
+	U operator[](T key);
+	void clean();
+};
+
 
 int main()
 {
-	stack<int> s;
-	s.push(4);
-	s.push(8);
-	std::cout << s.pop();
-	std::cout << s.pop();
-	std::cout << s.pop();
-	s.push(9);
-	s.push(6);
-	std::cout << std::endl;
-	s.clean();
-	s.push(10);
-	s.push(10);
-	s.push(8);
-	int a = s[2];
-	a = s[1];
-	a = s.size();
-	s.clean();
-
-	std::cout << s.pop();
+	pair<int, char>p;
+	p.push(1, 'a');
+	p.push(2, 'b');
+	std::cout << p[1] << std::endl;
+	p.clean();
+	return 0;
 }
 
 template<class T>
@@ -99,7 +132,7 @@ void stack<T>::clean()
 	top->next = nullptr;
 	this->isClean = true;
 	this->isTop = true;
-	
+
 }
 
 template<class T>
@@ -143,4 +176,85 @@ int stack<T>::size()
 			return i;
 		}
 	}
+}
+
+template<class T>
+void arr<T>::push(T data)
+{
+	this->isClean = false;
+	this->size_arr++;
+	realloc(this->p_arr, sizeof(T) * this->size_arr);
+	this->p_arr[this->size_arr - 1] = data;
+}
+
+template<class T>
+void arr<T>::clean()
+{
+	this->size_arr = 0;
+	this->p_arr = new T[this->size_arr];
+}
+
+template<class T>
+int arr<T>::size()
+{
+	return this->size_arr;
+}
+
+template<class T>
+T arr<T>::operator[](int index)
+{
+	if (this->size_arr < index || index < 0)
+	{
+		return -1; //error with index
+	}
+	return this->p_arr[index];
+}
+
+template<class T, class U>
+void pair<T, U>::push(T key, U val)
+{
+	this->arr1.push(key); //pushing the key
+	this->arr2.push(val); //pushing the value
+	this->size_pair++;
+}
+
+template<class T, class U>
+U pair<T, U>::pop(T key)
+{
+	for (int i = 0; i < this->arr1.size(); i++)
+	{
+		if (this->arr1[i] == key) //i is our index
+		{
+			return this->arr2[i]; //the value we looking for
+		}
+	}
+	return new U;
+}
+
+template<class T, class U>
+size_t pair<T, U>::size()
+{
+	return this->size_pair;
+}
+
+template<class T, class U>
+U pair<T, U>::operator[](T key)
+{
+	for (int i = 0; i < this->arr1.size(); i++)
+	{
+		if (this->arr1[i] == key) //i is our index
+		{
+			return this->arr2[i]; //the value we looking for
+		}
+	}
+	U u = key;
+	return u;
+}
+
+template<class T, class U>
+void pair<T, U>::clean()
+{
+	this->arr1.clean();
+	this->arr2.clean();
+	this->size_pair = this->size_pair ^ this->size_pair;
 }
