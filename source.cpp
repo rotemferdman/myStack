@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
+#include <string.h>
 
 template <class T>
 class node
@@ -12,7 +13,8 @@ public:
 template <class T>
 class sequence
 {
-
+protected:
+	bool isClean = true;
 public:
 	virtual void push(T data) = 0;
 	virtual void clean() = 0;
@@ -69,14 +71,35 @@ public:
 };
 
 
+class str
+{
+private:
+	bool isClean = true;
+	size_t size_str = 0;
+	char* string = (char*)malloc(sizeof(char) * size_str);
+
+public:
+	void operator=(char*);
+	void operator+=(char*);
+	char operator[](size_t);
+	void print();
+	int find(const char a);
+	void zelda();
+
+
+};
+
 int main()
 {
-	pair<int, char>p;
-	p.push(1, 'a');
-	p.push(2, 'b');
-	std::cout << p[1] << std::endl;
-	p.clean();
-	return 0;
+	char p[20] = { 'a' };
+	char* s = (char*)"string";
+	int length = strlen(s);
+	int i;
+	for (i = 0; i < length; i++)
+	{
+		p[i] = s[length - i];
+	}
+	printf("%s", p);
 }
 
 template<class T>
@@ -257,4 +280,30 @@ void pair<T, U>::clean()
 	this->arr1.clean();
 	this->arr2.clean();
 	this->size_pair = this->size_pair ^ this->size_pair;
+}
+
+void str::operator=(char* other)
+{
+	this->isClean = false;
+	this->size_str = sizeof(other);
+	this->string = (char*)malloc(sizeof(char) * this->size_str);
+	this->string = other;
+}
+
+void str::operator+=(char* other)
+{
+	char* a = (char*)calloc(sizeof(this->string) + sizeof(other) + 2, sizeof(char));
+	strcat(a, this->string);
+	strcat(a, other);
+	this->string = a;
+}
+
+char str::operator[](size_t z)
+{
+	return this->string[z];
+}
+
+void str::print()
+{
+	std::cout << this->string << std::endl;
 }
